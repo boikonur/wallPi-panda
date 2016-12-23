@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Chrono.h>
 
+#define NUM_TARGETS 5
 #define BUTTON_PIN 10//TODO
 #define BUTTON_LED_PIN 11//TODO
 
@@ -104,15 +105,7 @@ void loop()
 }//end loop
 
 
-void endBlink(){
-  for(int i=0; i<5; i++)
-  {
-    digitalWrite(BUTTON_LED_PIN, HIGH);
-    delay(100);
-    digitalWrite(BUTTON_LED_PIN, LOW);
-    delay(100);
-  }
-}
+
 
 int pandaGame()
 {
@@ -122,7 +115,7 @@ int pandaGame()
       target_index = 0;
       hitpoints = 0;
       targetAttempts = 0;
-      for(int i=0; i<5 ; i++)
+      for(int i=0; i<NUM_TARGETS ; i++)
       {
         disTarget(i);
       }
@@ -157,7 +150,7 @@ int pandaGame()
         enTarget(target_index);
 
         targetAttempts++;
-        if (target_index > 7)
+        if (target_index > NUM_TARGETS)
           target_index = 0;
 
         panda_stage = 2;
@@ -166,14 +159,14 @@ int pandaGame()
 
         if (readTarget(target_index))
         {
-          delay(200);
               if (readTarget(target_index))
             {
+              targetBlink(target_index);
               disTarget(target_index);
-              targetTimer.restart();
+              //targetTimer.restart();
               target_index++;
 
-              if (target_index > 7)
+              if (target_index > NUM_TARGETS)
                 target_index = 0;
               hitpoints++;
             }
@@ -185,22 +178,19 @@ int pandaGame()
       if(hitpoints<=targetAttempts)
       {
         result = map(hitpoints, 0, targetAttempts,MIN_PANDA_GAME ,MAX_PANDA_GAME);
-
       }else
-      result= MAX_PANDA_GAME;
+      result= MAX_PANDA_GAME-1;
 
 
       Serial.print("hitpoints: ");
       Serial.println(hitpoints);
       Serial.print("Target Attempts: ");
       Serial.println(targetAttempts);
-      for (int i = 0; i < 10; i++)
+      for (int i = 0; i < NUM_TARGETS; i++)
       {
         disTarget(i);
       }
-
-
-      return 1;
+      return result;
       break;
   }
 
@@ -240,4 +230,14 @@ case 3: return digitalRead(TARGET4_LED_PIN); break;
 case 4: return digitalRead(TARGET5_LED_PIN); break;
 }
 return 0;
+}
+
+void targetBlink(int num ){
+  for(int i=0; i<2; i++)
+  {
+    enTarget(num);
+    delay(100);
+    disTarget(num);
+    delay(100);
+  }
 }
