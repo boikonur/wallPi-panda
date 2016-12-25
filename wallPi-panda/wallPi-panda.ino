@@ -2,24 +2,25 @@
 #include <Chrono.h>
 
 #define NUM_TARGETS 5
-#define BUTTON_PIN 10//TODO
-#define BUTTON_LED_PIN 11//TODO
+#define BUTTON_PIN 12
+#define BUTTON_LED_PIN 13
 
-#define TARGET1_PIN 10//TODO
-#define TARGET2_PIN 11//TODO
-#define TARGET3_PIN 11//TODO
-#define TARGET4_PIN 11//TODO
-#define TARGET5_PIN 11//TODO
+#define TARGET1_PIN A0
+#define TARGET2_PIN A1
+#define TARGET3_PIN A2
+#define TARGET4_PIN A3
+#define TARGET5_PIN A4
 
-#define TARGET1_LED_PIN 10//TODO
-#define TARGET2_LED_PIN 11//TODO
-#define TARGET3_LED_PIN 11//TODO
-#define TARGET4_LED_PIN 11//TODO
-#define TARGET5_LED_PIN 11//TODO
+#define TARGET1_LED_PIN 2
+#define TARGET2_LED_PIN 3
+#define TARGET3_LED_PIN 4
+#define TARGET4_LED_PIN 5
+#define TARGET5_LED_PIN 6
 
 #define MAX_PANDA_GAME 10
 #define MIN_PANDA_GAME 3
-bool enabled_game=false;
+
+boolean enabled_game=false;
 char startGameC[] = "STARTC";
 char stopGameC[] = "STOPC:%d";
 
@@ -33,17 +34,13 @@ unsigned int targetAttempts=0;
 
 void setup() {
 
-Serial.begin(9600);
-while (!Serial) {
-  ; // wait for serial port to connect. Needed for native USB port only
-}
 
 pinMode(BUTTON_PIN, INPUT_PULLUP);
-pinMode(TARGET1_PIN, INPUT_PULLUP);
-pinMode(TARGET2_PIN, INPUT_PULLUP);
-pinMode(TARGET3_PIN, INPUT_PULLUP);
-pinMode(TARGET4_PIN, INPUT_PULLUP);
-pinMode(TARGET5_PIN, INPUT_PULLUP);
+pinMode(TARGET1_PIN, INPUT);
+pinMode(TARGET2_PIN, INPUT);
+pinMode(TARGET3_PIN, INPUT);
+pinMode(TARGET4_PIN, INPUT);
+pinMode(TARGET5_PIN, INPUT);
 
 pinMode(BUTTON_LED_PIN, OUTPUT);
 pinMode(TARGET1_LED_PIN, OUTPUT);
@@ -52,19 +49,41 @@ pinMode(TARGET3_LED_PIN, OUTPUT);
 pinMode(TARGET4_LED_PIN, OUTPUT);
 pinMode(TARGET5_LED_PIN, OUTPUT);
 
+pinMode(7, OUTPUT);
 digitalWrite(BUTTON_LED_PIN, HIGH);
 digitalWrite(TARGET1_LED_PIN, LOW);
 digitalWrite(TARGET2_LED_PIN, LOW);
 digitalWrite(TARGET3_LED_PIN, LOW);
 digitalWrite(TARGET4_LED_PIN, LOW);
 digitalWrite(TARGET5_LED_PIN, LOW);
-
+digitalWrite(7, HIGH);
+//Serial.println("init complete");
+Serial.begin(9600);
+while (!Serial) {
+  ; // wait for serial port to connect. Needed for native USB port only
+}
 
 }
 
 void loop()
 {
-  if(enabled_game = false)
+//
+//    while(1)
+//  {
+//Serial.print(digitalRead(TARGET1_PIN));
+//Serial.print(digitalRead(TARGET2_PIN));
+//Serial.print(digitalRead(TARGET3_PIN));
+//Serial.print(digitalRead(TARGET4_PIN));
+//Serial.print(digitalRead(TARGET5_PIN));
+//Serial.println("");
+//delay(200);
+//  
+//
+//  
+//  }
+
+  
+  if(enabled_game == false)
   {
     if(digitalRead(BUTTON_PIN) == LOW)
     {
@@ -77,15 +96,18 @@ void loop()
           Serial.print("\n");
           panda_stage=0;
           delay(100);
+         // Serial.println("init complete");
         }
       }
-  }
-  else
+        else
   {
     digitalWrite(BUTTON_LED_PIN, HIGH);
   }
 
-  if(enabled_game = true)
+      
+  }
+
+  if(enabled_game == true)
   {
     if (pandaGame())
     {
@@ -105,10 +127,25 @@ void loop()
 }//end loop
 
 
-
+void endBlink(){
+ for(int i=0; i<5 ; i++)
+ {
+         digitalWrite(BUTTON_LED_PIN, HIGH);
+      delay(100);
+      digitalWrite(BUTTON_LED_PIN, LOW);
+      delay(100);
+ }
+   digitalWrite(BUTTON_LED_PIN, HIGH);
+  
+}
 
 int pandaGame()
+
+
 {
+
+
+
   switch (panda_stage)
   {
     case 0:
@@ -135,7 +172,7 @@ int pandaGame()
       break;
 
     case 3:
-      if (gameTimer.hasPassed(120))
+      if (gameTimer.hasPassed(30))
       {
         panda_stage = 4;
         break;
@@ -144,8 +181,8 @@ int pandaGame()
       if (targetTimer.hasPassed(1000)) //change target on 1,4s?
       {
         disTarget(target_index);
-        targetAttempts++;
-        targetTimer.restart();
+       
+       // targetTimer.restart();
         target_index++;
         enTarget(target_index);
 
@@ -164,6 +201,7 @@ int pandaGame()
               targetBlink(target_index);
               disTarget(target_index);
               //targetTimer.restart();
+              //Serial.println("hit");
               target_index++;
 
               if (target_index > NUM_TARGETS)
@@ -181,11 +219,11 @@ int pandaGame()
       }else
       result= MAX_PANDA_GAME-1;
 
-
-      Serial.print("hitpoints: ");
-      Serial.println(hitpoints);
-      Serial.print("Target Attempts: ");
-      Serial.println(targetAttempts);
+//
+//      Serial.print("hitpoints: ");
+//      Serial.println(hitpoints);
+//      Serial.print("Target Attempts: ");
+//      Serial.println(targetAttempts);
       for (int i = 0; i < NUM_TARGETS; i++)
       {
         disTarget(i);
@@ -223,11 +261,11 @@ case 4: digitalWrite(TARGET5_LED_PIN, LOW); break;
 int readTarget(int num){
 switch(num)
 {
-case 0: return digitalRead(TARGET1_LED_PIN); break;
-case 1: return digitalRead(TARGET2_LED_PIN); break;
-case 2: return digitalRead(TARGET3_LED_PIN); break;
-case 3: return digitalRead(TARGET4_LED_PIN); break;
-case 4: return digitalRead(TARGET5_LED_PIN); break;
+case 0: return (digitalRead(TARGET1_PIN) == LOW); break;
+case 1: return (digitalRead(TARGET2_PIN) == LOW); break;
+case 2: return (digitalRead(TARGET3_PIN) == LOW); break;
+case 3: return (digitalRead(TARGET4_PIN) == LOW); break;
+case 4: return (digitalRead(TARGET5_PIN) == LOW); break;
 }
 return 0;
 }
@@ -237,7 +275,8 @@ void targetBlink(int num ){
   {
     enTarget(num);
     delay(100);
+    //Serial.println("hit");
     disTarget(num);
-    delay(100);
+    delay(50);
   }
 }
