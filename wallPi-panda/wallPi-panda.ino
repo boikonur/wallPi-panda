@@ -2,6 +2,11 @@
 #include <Chrono.h>
 
 #define NUM_TARGETS 5
+#define RS485Transmit    HIGH
+#define RS485Receive     LOW
+#define MAX_PANDA_GAME 10
+#define MIN_PANDA_GAME 3
+
 #define BUTTON_PIN 12
 #define BUTTON_LED_PIN 13
 
@@ -17,8 +22,7 @@
 #define TARGET4_LED_PIN 5
 #define TARGET5_LED_PIN 6
 
-#define MAX_PANDA_GAME 10
-#define MIN_PANDA_GAME 3
+#define WRITE_EN_PIN 8
 
 boolean enabled_game=false;
 char startGameC[] = "STARTC";
@@ -42,6 +46,7 @@ pinMode(TARGET3_PIN, INPUT);
 pinMode(TARGET4_PIN, INPUT);
 pinMode(TARGET5_PIN, INPUT);
 
+pinMode(WRITE_EN_PIN, OUTPUT);
 pinMode(BUTTON_LED_PIN, OUTPUT);
 pinMode(TARGET1_LED_PIN, OUTPUT);
 pinMode(TARGET2_LED_PIN, OUTPUT);
@@ -58,6 +63,8 @@ digitalWrite(TARGET4_LED_PIN, LOW);
 digitalWrite(TARGET5_LED_PIN, LOW);
 digitalWrite(7, HIGH);
 //Serial.println("init complete");
+
+digitalWrite(WRITE_EN_PIN, RS485Receive);
 Serial.begin(9600);
 while (!Serial) {
   ; // wait for serial port to connect. Needed for native USB port only
@@ -67,22 +74,7 @@ while (!Serial) {
 
 void loop()
 {
-//
-//    while(1)
-//  {
-//Serial.print(digitalRead(TARGET1_PIN));
-//Serial.print(digitalRead(TARGET2_PIN));
-//Serial.print(digitalRead(TARGET3_PIN));
-//Serial.print(digitalRead(TARGET4_PIN));
-//Serial.print(digitalRead(TARGET5_PIN));
-//Serial.println("");
-//delay(200);
-//  
-//
-//  
-//  }
 
-  
   if(enabled_game == false)
   {
     if(digitalRead(BUTTON_PIN) == LOW)
@@ -92,8 +84,12 @@ void loop()
         {
           digitalWrite(BUTTON_LED_PIN, LOW);
           enabled_game=true;
+          digitalWrite(WRITE_EN_PIN, RS485Transmit);
+          delay(100);
           Serial.print(startGameC);
           Serial.print("\n");
+          delay(100);
+          digitalWrite(WRITE_EN_PIN, RS485Receive);
           panda_stage=0;
           delay(100);
          // Serial.println("init complete");
@@ -104,7 +100,7 @@ void loop()
     digitalWrite(BUTTON_LED_PIN, HIGH);
   }
 
-      
+
   }
 
   if(enabled_game == true)
@@ -116,9 +112,13 @@ void loop()
               stopGameC,
               result
              );
+      digitalWrite(WRITE_EN_PIN, RS485Transmit);
+      delay(100);
       Serial.print(command);
       Serial.print("\n");
       delay(100);
+      digitalWrite(WRITE_EN_PIN, RS485Receive);
+
       enabled_game=false;
       endBlink();
     }
@@ -136,7 +136,7 @@ void endBlink(){
       delay(100);
  }
    digitalWrite(BUTTON_LED_PIN, HIGH);
-  
+
 }
 
 int pandaGame()
@@ -181,7 +181,7 @@ int pandaGame()
       if (targetTimer.hasPassed(1000)) //change target on 1,4s?
       {
         disTarget(target_index);
-       
+
        // targetTimer.restart();
         target_index++;
         enTarget(target_index);
