@@ -75,6 +75,7 @@ while (!Serial) {
 void loop()
 {
 
+
   if(enabled_game == false)
   {
     if(digitalRead(BUTTON_PIN) == LOW)
@@ -172,7 +173,7 @@ int pandaGame()
       break;
 
     case 3:
-      if (gameTimer.hasPassed(30))
+      if (gameTimer.hasPassed(60))
       {
         panda_stage = 4;
         break;
@@ -184,11 +185,12 @@ int pandaGame()
 
        // targetTimer.restart();
         target_index++;
+          if (target_index > NUM_TARGETS)
+          target_index = 0;
         enTarget(target_index);
 
         targetAttempts++;
-        if (target_index > NUM_TARGETS)
-          target_index = 0;
+      
 
         panda_stage = 2;
       }
@@ -203,9 +205,10 @@ int pandaGame()
               //targetTimer.restart();
               //Serial.println("hit");
               target_index++;
-
-              if (target_index > NUM_TARGETS)
+               if (target_index > NUM_TARGETS)
                 target_index = 0;
+              targetTimer.restart();
+             
               hitpoints++;
             }
         }
@@ -261,11 +264,11 @@ case 4: digitalWrite(TARGET5_LED_PIN, LOW); break;
 int readTarget(int num){
 switch(num)
 {
-case 0: return (digitalRead(TARGET1_PIN) == LOW); break;
-case 1: return (digitalRead(TARGET2_PIN) == LOW); break;
-case 2: return (digitalRead(TARGET3_PIN) == LOW); break;
-case 3: return (digitalRead(TARGET4_PIN) == LOW); break;
-case 4: return (digitalRead(TARGET5_PIN) == LOW); break;
+case 0: return (digitalRead(TARGET3_PIN) == LOW); break;
+case 1: return (digitalRead(TARGET3_PIN) == LOW); break;
+case 2: return (digitalRead(TARGET2_PIN) == LOW); break;
+case 3: return (digitalRead(TARGET5_PIN) == LOW); break;
+case 4: return (digitalRead(TARGET4_PIN) == LOW); break;
 }
 return 0;
 }
